@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     # init_rag_opl(
     #     "internation-students-uk",
-    #     file_path="./international_students_working_in_the_uk_during_your_studies_2015-16_booklet.pdf",
+    #     file_path="./attention_is_all_you_need.pdf",
     # )
 
     init_rag_chroma(file_path="./rag_powered_by_google_search.pdf")
