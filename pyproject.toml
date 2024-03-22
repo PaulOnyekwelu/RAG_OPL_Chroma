@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "rag-opl-project2"
+version = "0.1.0"
+description = ""
+authors = ["Paul Onyekwelu <onyekwelupaulo@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "^0.1.13"
+langchain-openai = "^0.1.0"
+openai = "^1.14.2"
+pypdf = "^4.1.0"
+python-dotenv = "^1.0.1"
+langchain-community = "^0.0.29"
+pinecone-client = "^3.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
