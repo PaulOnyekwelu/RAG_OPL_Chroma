@@ -79,6 +79,7 @@ def init_rag_opl(index_name, load_type="file", file_path=None, query=None):
             print("Quitting...", end="")
             time.sleep(2)
             print("goodbye!")
+            break
 
         answer = ask_and_get_answer(vector_store, q)
         print(f"\n Answer: \n")

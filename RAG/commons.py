@@ -6,8 +6,16 @@ from langchain_community.document_loaders import (
     WikipediaLoader,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQA
 from langchain_openai import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
+
+# from langchain.chains import RetrievalQA
+from langchain.chains import ConversationalRetrievalChain
 
 
 def load_document(file):
@@ -60,16 +68,48 @@ def print_embedding_cost(text):
     print(f"Embedding Cost in USD: {total_tokens / 1000 * 0.0004:.6f}")
 
 
+def create_prompt_template():
+    system_template = r"""
+    use the following piece of context to answer the user's question.
+    -----------------------
+    context: ```{context}```
+    """
+    user_template = """
+    question: ```{question}```
+    chat history: ```{chat_history}```
+    """
+    return ChatPromptTemplate.from_messages(
+        [
+            SystemMessagePromptTemplate.from_template(system_template),
+            HumanMessagePromptTemplate.from_template(user_template),
+        ]
+    )
+
 
 def ask_and_get_answer(vector_store, query):
     llm = ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.9)
     retriever = vector_store.as_retriever(
-        search_type="similarity", search_kwargs={"k": 3}
+        search_type="similarity", search_kwargs={"k": 5}
     )
-    chain = RetrievalQA.from_chain_type(
-        llm=llm, chain_type="stuff", retriever=retriever
+    # chain = RetrievalQA.from_chain_type(
+    #     llm=llm, chain_type="stuff", retriever=retriever
+    # )
+    # answer = crc.invoke(query)
+
+    # adding memory to the chain
+    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    # adding a prompt template
+    qa_prompt = create_prompt_template()
+    
+    crc = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        chain_type="stuff",
+        retriever=retriever,
+        memory=memory,
+        verbose=True,
+        combine_docs_chain_kwargs={"prompt": qa_prompt},
     )
 
-    answer = chain.invoke(query)
+    answer = crc.invoke(query)
 
     return answer

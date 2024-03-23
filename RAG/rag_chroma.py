@@ -51,8 +51,9 @@ def init_rag_chroma(
             print("Quitting...", end="")
             time.sleep(2)
             print("goodbye!")
+            break
 
         answer = ask_and_get_answer(vector_store, q)
         print(f"\n Answer: \n")
-        print(f"{answer} \n")
+        print(f"{answer['answer']} \n")
         print("-" * 70)
