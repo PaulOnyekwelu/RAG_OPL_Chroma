@@ -2,7 +2,7 @@ import os
 import time
 from langchain.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
-from .commons import load_document, chunk_data, print_embedding_cost, ask_and_get_answer
+from .commons import load_document, chunk_data, calculate_embedding_cost, ask_and_get_answer
 
 chroma_path = "./chroma_db"
 
@@ -31,7 +31,7 @@ def init_rag_chroma(
 
     chunks = chunk_data(document)
 
-    print_embedding_cost(chunks)
+    calculate_embedding_cost(chunks)
 
     create_embeddings = not os.path.exists(chroma_path)
     vector_store = load_embeddings_chroma(

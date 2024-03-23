@@ -3,7 +3,7 @@ import pinecone
 from pinecone import ServerlessSpec
 from langchain_community.vectorstores import Pinecone
 from langchain_openai import OpenAIEmbeddings
-from .commons import load_document, chunk_data, print_embedding_cost, ask_and_get_answer
+from .commons import load_document, chunk_data, calculate_embedding_cost, ask_and_get_answer
 
 
 def insert_or_fetch_embeddings(index_name, chunks):
@@ -63,7 +63,7 @@ def init_rag_opl(index_name, load_type="file", file_path=None, query=None):
 
     chunks = chunk_data(document)
 
-    print_embedding_cost(chunks)
+    calculate_embedding_cost(chunks)
     delete_other_indexes(index_name)
 
     vector_store = insert_or_fetch_embeddings(index_name, chunks)

@@ -4,6 +4,7 @@ from langchain_community.document_loaders import (
     PyPDFLoader,
     Docx2txtLoader,
     WikipediaLoader,
+    TextLoader,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import ChatOpenAI
@@ -32,6 +33,8 @@ def load_document(file):
         loader = PyPDFLoader(file)
     elif ext.lower() == ".docx":
         loader = Docx2txtLoader(file)
+    elif ext.lower() == ".txt":
+        loader = TextLoader(file)
     else:
         raise TypeError(f"unsupported file type: {ext}")
 
@@ -50,22 +53,24 @@ def load_from_wikipedia(query, lang="en", load_max_docs=2):
     return chunks
 
 
-def chunk_data(data, chunk_size=256):
+def chunk_data(data, chunk_size=256, chunk_overlap=0):
 
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size, chunk_overlap=0
+        chunk_size=chunk_size, chunk_overlap=chunk_overlap
     )
     data = text_splitter.split_documents(data)
 
     return data
 
 
-def print_embedding_cost(text):
+def calculate_embedding_cost(text):
 
     enc = tiktoken.encoding_for_model("text-embedding-ada-002")
     total_tokens = sum([len(enc.encode(page.page_content)) for page in text])
-    print(f"Total Tokens: {total_tokens}")
-    print(f"Embedding Cost in USD: {total_tokens / 1000 * 0.0004:.6f}")
+    return total_tokens, round(total_tokens / 1000 * 0.0004, 6)
+
+    # print(f"Total Tokens: {total_tokens}")
+    # print(f"Embedding Cost in USD: {total_tokens / 1000 * 0.0004:.6f}")
 
 
 def create_prompt_template():
@@ -86,10 +91,10 @@ def create_prompt_template():
     )
 
 
-def ask_and_get_answer(vector_store, query):
+def ask_and_get_answer(vector_store, query, k=5):
     llm = ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.9)
     retriever = vector_store.as_retriever(
-        search_type="similarity", search_kwargs={"k": 5}
+        search_type="similarity", search_kwargs={"k": k}
     )
     # chain = RetrievalQA.from_chain_type(
     #     llm=llm, chain_type="stuff", retriever=retriever
@@ -100,7 +105,7 @@ def ask_and_get_answer(vector_store, query):
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     # adding a prompt template
     qa_prompt = create_prompt_template()
-    
+
     crc = ConversationalRetrievalChain.from_llm(
         llm=llm,
         chain_type="stuff",
